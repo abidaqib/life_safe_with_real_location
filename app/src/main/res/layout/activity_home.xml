@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#d1fcbe"
+    tools:context=".Home">
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:baselineAligned="false">
+
+        <android.support.design.widget.FloatingActionButton
+            android:layout_width="wrap_content"
+            android:layout_height="58dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="30dp"
+            android:layout_marginLeft="30dp"
+            android:layout_marginTop="30dp"
+            android:layout_marginEnd="30dp"
+            android:layout_marginRight="30dp"
+            android:layout_marginBottom="30dp"
+            android:src="@drawable/ic_my_location_black_24dp"
+            android:onClick="seeMyLocation"
+            app:backgroundTint="#caf7ce"
+            />
+
+        <Button
+            android:id="@+id/btPolice"
+            android:layout_width="140dp"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/btEmrgency"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/triangle"
+            android:onClick="onClickPolice"
+            android:paddingTop="34dp"
+            android:rotation="0"
+            android:text="@string/police"
+            android:textColor="#f9cece"
+            android:textSize="19sp" />
+
+        <Button
+            android:id="@+id/btDoctor"
+            android:layout_width="119dp"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@+id/btPolice"
+            android:background="@drawable/triangle"
+            android:onClick="onClickFire"
+            android:paddingTop="30dp"
+            android:rotation="-90"
+            android:text="@string/fire_service"
+            android:textColor="#f9cece" />
+
+        <Button
+            android:id="@+id/btEmrgency"
+            android:layout_width="140dp"
+            android:layout_height="120dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:background="#d92828"
+            android:onClick="onClickEmergency"
+            android:text="@string/emergency"
+            android:textColor="#fff"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:ignore="OnClick" />
+
+        <Button
+            android:id="@+id/btFireService"
+            android:layout_width="117dp"
+            android:layout_height="100dp"
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@+id/btPolice"
+            android:background="@drawable/triangle"
+            android:onClick="onClickDocror"
+            android:paddingTop="50dp"
+            android:rotation="90"
+            android:text="@string/ambulance"
+            android:textColor="#f9cece"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/btLogIn"
+            android:layout_width="140dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/btEmrgency"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/triangle"
+            android:onClick="onClickIn"
+            android:paddingTop="25dp"
+            android:rotation="180"
+            android:text="@string/ni"
+            android:textColor="#f9cece"
+            android:textSize="20sp"
+            tools:ignore="OnClick" />
+    </RelativeLayout>
+
+</LinearLayout>
