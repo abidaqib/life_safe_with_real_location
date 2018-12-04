@@ -1,6 +1,8 @@
 package com.example.life_safe_with_real_location;
 
 import android.Manifest;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
@@ -12,6 +14,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.Toast;
 
@@ -27,7 +30,9 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -61,8 +66,6 @@ public class Map extends FragmentActivity implements OnMapReadyCallback {
 
         myLocation();
 
-
-
     }
 
 
@@ -80,6 +83,7 @@ public class Map extends FragmentActivity implements OnMapReadyCallback {
             //                                          int[] grantResults)
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
+            Toast.makeText(this, "Not aces", Toast.LENGTH_SHORT).show();
             return;
         }
         if(locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
@@ -95,12 +99,21 @@ public class Map extends FragmentActivity implements OnMapReadyCallback {
                     try {
                         Thread.sleep(1000);
                         //insert latitude and longitude in database...
-                        //insertLocation(String.valueOf(lat),String.valueOf(lng));
+                        insertLocation(String.valueOf(lat),String.valueOf(lng));
 
                         Toast.makeText(Map.this, "Net: "+String.valueOf(lat)+","+String.valueOf(lng), Toast.LENGTH_SHORT).show();
 
-                        putLocationToShow(lat, lng);
+                        putLocationToMarker(lat, lng);
 
+                        searchRequest();
+
+                       // HelpHulder helpHulder = new HelpHulder();
+
+                       // putLocationMarkerOther(Double.valueOf(helpHulder.getLat()), Double.valueOf(helpHulder.getLng()), helpHulder.getH_id());
+
+                       // point();
+
+                       // Toast.makeText(Map.this, String.valueOf( distance(lat, lng, lat+2, lng+2) ), Toast.LENGTH_SHORT).show();
                         //free location test with out net......
                         //putLocationToShow(lat, lng);
 
@@ -144,14 +157,16 @@ public class Map extends FragmentActivity implements OnMapReadyCallback {
                     try {
                         Thread.sleep(1000);
                         //insert latitude and longitude in database...
-                       // insertLocation(String.valueOf(lat),String.valueOf(lng));
+                        insertLocation(String.valueOf(lat),String.valueOf(lng));
 
                         Toast.makeText(Map.this, "GPS: "+String.valueOf(lat)+","+String.valueOf(lng), Toast.LENGTH_SHORT).show();
 
-                        putLocationToShow(lat, lng);
+                        putLocationToMarker(lat, lng);
+
+                        searchRequest();
 
                         //free location test with out net......
-                        //putLocationToShow(lat, lng);
+                       // putLocationMarkerOther(lat+1, lng+1);
 
                        // showLocation();
                         //      Toast.makeText(Map.this, String.valueOf(id[0])+","+String.valueOf(lat1[0])+","+String.valueOf(lng1[0]), Toast.LENGTH_SHORT).show();
@@ -179,50 +194,66 @@ public class Map extends FragmentActivity implements OnMapReadyCallback {
         }
     }
 
-    private void showLocation() {
+    private void point(){
+        LatLng latLng = new LatLng(lat, lng);
+        LatLng latLng2 = new LatLng(lat+1, lng+1);
+        mMap.addPolyline(new PolylineOptions().add(latLng).add(latLng2));
+    }
+
+    private void searchRequest() {
         RequestQueue requestQueue = Volley.newRequestQueue(Map.this);
 
-        String BASE_URL = new UrlHolder().getURL()+"showLocation.php";
+        String url = new UrlHolder().getURL()+"SearchRequest.php";
 
-        StringRequest request = new StringRequest(Request.Method.GET, BASE_URL, new Response.Listener<String>() {
+
+        StringRequest request = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
 
                 try {
-                    JSONArray root = new JSONArray(response);
+                    JSONObject root = new JSONObject(response);
+                    JSONArray result = root.getJSONArray("result");
+                    JSONObject user = result.getJSONObject(0);
+                    if (user.getString("error").equalsIgnoreCase("no")) {
 
-                    for (int i = 0; i < root.length(); i++) {
-                        JSONObject farmer = root.getJSONObject(i);
+                        Toast.makeText(Map.this, "You are in.. "+user.getString("h_id"), Toast.LENGTH_SHORT).show();
+                        new HelpHulder(user.getString("h_id"), user.getString("lat"), user.getString("lng"));
 
-                        Toast.makeText(Map.this, String.valueOf(farmer.getDouble("id"))+","+String.valueOf(farmer.getDouble("lat"))+","+String.valueOf(farmer.getDouble("lng")), Toast.LENGTH_SHORT).show();
-
-                        // this method have two argoment and it take the valus and show in to map.......
-                        putLocationToShow(farmer.getDouble("lat"), farmer.getDouble("lng"));
-
+                        Toast.makeText(Map.this, user.getString("h_id")+" "+user.getString("lat")+" "+user.getString("lng"), Toast.LENGTH_SHORT).show();
+                        putLocationMarkerOther(Double.valueOf(user.getString("lat")), Double.valueOf(user.getString("lng")), user.getString("h_id"));
                     }
 
                 } catch (JSONException e) {
+                    Toast.makeText(Map.this, "" + e.getMessage().toString(), Toast.LENGTH_SHORT).show();
                     e.printStackTrace();
-                    Toast.makeText(Map.this, ""+e.getMessage().toString(), Toast.LENGTH_SHORT).show();
                 }
 
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-
+                Toast.makeText(Map.this, "Srch_Hlp: Error Detected is "+error.getMessage(), Toast.LENGTH_SHORT).show();
             }
-        });
+        }) {
+            @Override
+            protected java.util.Map<String, String> getParams() throws AuthFailureError {
 
+                java.util.Map<String, String> params = new HashMap<>();
+                params.put("who_help", new IdHulder().getWho());
+
+                return params;
+            }
+        };
 
         requestQueue.add(request);
+
 
         // data fetch end here
 
 
     }
 
-    private void putLocationToShow(double lat, double lng) {
+    private void putLocationToMarker(double lat, double lng) {
         LatLng latLng = new LatLng(lat, lng);
 
         Geocoder geocoder = new Geocoder(getApplicationContext());
@@ -234,17 +265,107 @@ public class Map extends FragmentActivity implements OnMapReadyCallback {
             String str = String.valueOf(lat)+","+String.valueOf(lng);
 
             mMap.addMarker(new MarkerOptions().position(latLng).title(str));
+
+
            // mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15.3f));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    void dialogBox(String str, final String who){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+
+        builder.setTitle("Confirm");
+        builder.setMessage(str+who);
+
+        builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int which) {
+                // Do nothing but close the dialog
+                Toast.makeText(Map.this, "Yes", Toast.LENGTH_SHORT).show();
+
+                dialog.dismiss();
+            }
+        });
+
+        builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Toast.makeText(Map.this, "No", Toast.LENGTH_SHORT).show();
+                // Do nothing
+                dialog.dismiss();
+            }
+        });
+
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+
+
+    private void putLocationMarkerOther(double h_lat, double h_lng, String h_id) {
+        LatLng latLng = new LatLng(h_lat, h_lng);
+
+        Geocoder geocoder = new Geocoder(getApplicationContext());
+        try {
+          //  mMap.clear();
+
+            List<Address> addressList = geocoder.getFromLocation(h_lat, h_lng, 1);
+//            String str = addressList.get(0).getLocality()+","+addressList.get(0).getCountryName()+","+String.valueOf(lat)+","+String.valueOf(lng);
+            String str = String.valueOf(lat) + "," + String.valueOf(lng) + " >>"+h_id +" D: "+distance(lat, lng, h_lat, h_lng);
+
+           Marker marker =  mMap.addMarker(new MarkerOptions().position(latLng).title(str));
+
+           /*
+            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker m) {
+                    Toast.makeText(Map.this, "marker", Toast.LENGTH_SHORT).show();
+                    dialogBox("Do our want to save him?", ""+new IdHulder().getWho());
+                    return false;
+                }
+            });
+        */
+
+            // mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15.3f));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+        private double distance(double lat1, double lon1, double lat2, double lon2) {
+        double theta = lon1 - lon2;
+        double dist = Math.sin(deg2rad(lat1)) * Math.sin(deg2rad(lat2)) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.cos(deg2rad(theta));
+        dist = Math.acos(dist);
+        dist = rad2deg(dist);
+        dist = dist * 60 * 1.1515;
+            dist = dist * 1.609344;
+
+        return (dist);
+    }
+
+    /*:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+    /*::  This function converts decimal degrees to radians             :*/
+    /*:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+    private double deg2rad(double deg) {
+        return (deg * Math.PI / 180.0);
+    }
+
+    /*:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+    /*::  This function converts radians to decimal degrees             :*/
+    /*:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+    private double rad2deg(double rad) {
+        return (rad * 180.0 / Math.PI);
+    }
+
     private void insertLocation(final String lat, final String lng) {
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
 
-        String url = new UrlHolder().getURL()+"locationInsert.php";
+        String url = new UrlHolder().getURL()+"InsertLocation.php";
 
         StringRequest request = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
@@ -298,6 +419,8 @@ public class Map extends FragmentActivity implements OnMapReadyCallback {
     public void goToLocation(View view) {
 
         LatLng latLng = new LatLng(lat, lng);
+
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15.3f));
+
     }
 }

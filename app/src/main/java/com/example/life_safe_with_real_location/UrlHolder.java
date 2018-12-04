@@ -6,5 +6,5 @@ public class UrlHolder {
         return URL;
     }
 
-    public String URL = "http://192.168.43.144/life_safe_with_real_location/";
+    public String URL = "http://192.168.0.102/life_safe_with_real_location/";
 }

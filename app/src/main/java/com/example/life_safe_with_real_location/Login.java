@@ -40,7 +40,7 @@ public class Login extends AppCompatActivity {
         requestQueue = Volley.newRequestQueue(this);
 
         new IdHulder().setU_id("-1"); // it because static variable memorise valo soo fist we give it garvage variable....
-        Toast.makeText(this, new IdHulder().getU_id(), Toast.LENGTH_SHORT).show();3
+        Toast.makeText(this, new IdHulder().getU_id(), Toast.LENGTH_SHORT).show();
     }
 
     public void onclickLoginIn(View view) {
@@ -57,19 +57,16 @@ public class Login extends AppCompatActivity {
                 try {
                     JSONObject root = new JSONObject(response);
                     JSONArray result = root.getJSONArray("result");
-                    JSONObject user = result.getJSONObject(0);
-
-
-
+                    for(int i =0 ; i< result.length();i++){
+                    JSONObject user = result.getJSONObject(i);
                     if (user.getString("error").equalsIgnoreCase("no")) {
 
-                        new IdHulder(user.getString("u_id"));
-                        Toast.makeText(Login.this, "You are in.."+user.getString("u_id"), Toast.LENGTH_SHORT).show();
-                       // startActivity(new Intent(Login.this,Home.class));
-                        Intent intent = new Intent(Login.this, Home.class);
-                       // intent.putExtra("u_id" ,user.getString("u_id"));
-                        startActivity(intent);
-
+                            new IdHulder(user.getString("u_id"), user.getString("who"));
+                            Toast.makeText(Login.this, "You are in.. " + user.getString("u_id") + " " + user.getString("who"), Toast.LENGTH_SHORT).show();
+                            // startActivity(new Intent(Login.this,Home.class));
+                            Intent intent = new Intent(Login.this, Home.class);
+                            startActivity(intent);
+                        }
                     }
 
                 } catch (JSONException e) {
